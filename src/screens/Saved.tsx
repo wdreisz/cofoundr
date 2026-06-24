@@ -1,19 +1,19 @@
-import type { Profile, SavedItem } from "../types";
-import { founders } from "../data/founders";
-import { scoreFounder, scoreRomance } from "../lib/matching";
+import type { Founder, Mode } from "../types";
 
-const byId = (id: string) => founders.find((f) => f.id === id)!;
+export interface SavedView {
+  founder: Founder;
+  mode: Mode;
+  score: number;
+}
 
 export function Saved({
   saved,
-  profile,
   onConnect,
   onRemove,
 }: {
-  saved: SavedItem[];
-  profile: Profile;
-  onConnect: (id: string, mode: SavedItem["mode"]) => void;
-  onRemove: (id: string, mode: SavedItem["mode"]) => void;
+  saved: SavedView[];
+  onConnect: (id: string, mode: Mode) => void;
+  onRemove: (id: string, mode: Mode) => void;
 }) {
   if (saved.length === 0) {
     return (
@@ -27,12 +27,10 @@ export function Saved({
 
   return (
     <div className="saved-wrap">
-      {saved.map((item) => {
-        const f = byId(item.id);
-        const romance = item.mode === "romance";
-        const { score } = romance ? scoreRomance(profile, f) : scoreFounder(profile, f);
+      {saved.map(({ founder: f, mode, score }) => {
+        const romance = mode === "romance";
         return (
-          <div key={`${item.mode}-${f.id}`} className="saved-card">
+          <div key={`${mode}-${f.id}`} className="saved-card">
             <div className="sc-head">
               <div className="avatar">{f.initials}</div>
               <div>
@@ -47,10 +45,10 @@ export function Saved({
             <p className="sc-pitch">{f.pitch}</p>
             <div className="sc-actions">
               <span className="sc-fit-inline">{score}% {romance ? "match" : "fit"}</span>
-              <button className="btn" onClick={() => onRemove(f.id, item.mode)}>
+              <button className="btn" onClick={() => onRemove(f.id, mode)}>
                 <i className="ti ti-trash" /> Remove
               </button>
-              <button className="btn btn-primary" onClick={() => onConnect(f.id, item.mode)}>
+              <button className="btn btn-primary" onClick={() => onConnect(f.id, mode)}>
                 <i className={`ti ${romance ? "ti-heart" : "ti-bolt"}`} /> {romance ? "Like" : "Connect"}
               </button>
             </div>

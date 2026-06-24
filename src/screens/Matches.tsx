@@ -1,11 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import type { ChatMessage, Match } from "../types";
-import { founders } from "../data/founders";
+import type { ChatMessage, Founder, Match } from "../types";
 import { roleLabel } from "../data/labels";
 import { ProposeCallSheet } from "../components/ProposeCallSheet";
 import { WorkingSessionSheet } from "../components/WorkingSessionSheet";
-
-const byId = (id: string) => founders.find((f) => f.id === id)!;
 
 export function Matches({
   matches,
@@ -14,6 +11,7 @@ export function Matches({
   onSend,
   onProposeCall,
   onSendSession,
+  resolveFounder,
   twoPane = false,
 }: {
   matches: Match[];
@@ -22,8 +20,10 @@ export function Matches({
   onSend: (founderId: string, text: string) => void;
   onProposeCall: (founderId: string, slot: string) => void;
   onSendSession: (founderId: string, agenda: string[]) => void;
+  resolveFounder: (id: string) => Founder;
   twoPane?: boolean;
 }) {
+  const byId = resolveFounder;
   const open = activeChat ? matches.find((m) => m.founderId === activeChat) : undefined;
 
   const emptyState = (
@@ -66,6 +66,7 @@ export function Matches({
   const chat = open ? (
     <ChatView
       match={open}
+      founder={byId(open.founderId)}
       onBack={() => onOpenChat(null)}
       onSend={onSend}
       onProposeCall={onProposeCall}
@@ -98,18 +99,19 @@ export function Matches({
 
 function ChatView({
   match,
+  founder: f,
   onBack,
   onSend,
   onProposeCall,
   onSendSession,
 }: {
   match: Match;
+  founder: Founder;
   onBack: () => void;
   onSend: (founderId: string, text: string) => void;
   onProposeCall: (founderId: string, slot: string) => void;
   onSendSession: (founderId: string, agenda: string[]) => void;
 }) {
-  const f = byId(match.founderId);
   const firstName = f.name.split(" ")[0];
   const [text, setText] = useState("");
   const [sheet, setSheet] = useState<"call" | "session" | null>(null);

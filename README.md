@@ -12,6 +12,14 @@ npm run dev      # dev server (http://localhost:5173)
 npm run build    # type-check + production build to dist/
 ```
 
+## Backend (Convex + Clerk)
+
+The app runs in **mock mode** out of the box (in-memory data, no sign-in). A complete real-time
+backend ships in `convex/` (database, ranked deck, swipes/matches, chat with scheduled replies)
+plus Clerk auth wiring. Set two env vars to switch from mock to the live backend — see
+[CONVEX_SETUP.md](CONVEX_SETUP.md). Stack: Convex (DB + functions + real-time) · Clerk (auth) ·
+the same Vite SPA.
+
 ## Deploy
 
 A pure static SPA — `npm run build` emits `dist/`. Because routing is hash-based (`/#app`), no SPA rewrite rules are needed on any host.

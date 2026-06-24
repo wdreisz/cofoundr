@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { App } from "./App";
+import { AppConvex } from "./AppConvex";
 import { Landing } from "./Landing";
+import { CofoundrProviders, convexConfigured } from "./convex";
 
 const isAppRoute = () => window.location.hash.replace(/[#/]/g, "") === "app";
 
@@ -16,6 +18,13 @@ export function Root() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  if (appView) return <App />;
-  return <Landing onLaunch={() => { window.location.hash = "app"; }} />;
+  return (
+    <CofoundrProviders>
+      {appView ? (
+        convexConfigured ? <AppConvex /> : <App />
+      ) : (
+        <Landing onLaunch={() => { window.location.hash = "app"; }} />
+      )}
+    </CofoundrProviders>
+  );
 }

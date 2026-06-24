@@ -2,11 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChatMessage, Dating, Filters, Founder, Match, Mode, Profile, SavedItem, Tab } from "./types";
 import { noFilters } from "./types";
 import { founders as allFounders } from "./data/founders";
-import { rankDeck, rankRomance } from "./lib/matching";
+import { rankDeck, rankRomance, scoreFounder, scoreRomance } from "./lib/matching";
 import { createMatch, wouldMatch } from "./lib/match";
 import { useIsDesktop } from "./hooks/useIsDesktop";
-import { BottomNav } from "./components/BottomNav";
-import { DesktopShell } from "./components/DesktopShell";
+import { AppShell } from "./components/AppShell";
 import { MatchOverlay } from "./components/MatchOverlay";
 import { FilterSheet } from "./components/FilterSheet";
 import { BoostSheet } from "./components/BoostSheet";
@@ -16,13 +15,6 @@ import { Discover } from "./screens/Discover";
 import { Matches } from "./screens/Matches";
 import { Saved } from "./screens/Saved";
 import { ProfileScreen } from "./screens/ProfileScreen";
-
-const tabTitles: Record<Tab, string> = {
-  discover: "Discover",
-  matches: "Matches",
-  saved: "Saved",
-  profile: "Profile",
-};
 
 const byId = (id: string): Founder => allFounders.find((f) => f.id === id)!;
 
@@ -181,6 +173,12 @@ export function App() {
     );
   }
 
+  const savedViews = saved.map((s) => {
+    const f = byId(s.id);
+    const score = (s.mode === "romance" ? scoreRomance(profile, f) : scoreFounder(profile, f)).score;
+    return { founder: f, mode: s.mode, score };
+  });
+
   const screen = (
     <>
       {tab === "discover" && (
@@ -203,11 +201,12 @@ export function App() {
           onSend={sendMessage}
           onProposeCall={proposeCall}
           onSendSession={sendSession}
+          resolveFounder={byId}
           twoPane={isDesktop}
         />
       )}
       {tab === "saved" && (
-        <Saved saved={saved} profile={profile} onConnect={connectFromSaved} onRemove={removeSaved} />
+        <Saved saved={savedViews} onConnect={connectFromSaved} onRemove={removeSaved} />
       )}
       {tab === "profile" && (
         <ProfileScreen
@@ -256,52 +255,19 @@ export function App() {
     </>
   );
 
-  if (isDesktop) {
-    return (
-      <DesktopShell
-        tab={tab}
-        onTab={setTab}
-        matchCount={matches.length}
-        boostActive={boostLeft > 0}
-        filtersDisabled={mode === "romance"}
-        onFilter={() => mode === "cofounder" && setSheet("filter")}
-        onBoost={() => setSheet("boost")}
-        overlays={overlays}
-      >
-        {screen}
-      </DesktopShell>
-    );
-  }
-
   return (
-    <div className="app-root">
-      <div className="phone">
-        <header className="topbar">
-          <button
-            className="icon"
-            aria-label="filters"
-            disabled={mode === "romance"}
-            style={{ opacity: mode === "romance" ? 0.35 : 1 }}
-            onClick={() => mode === "cofounder" && setSheet("filter")}
-          >
-            <i className="ti ti-adjustments-horizontal" />
-          </button>
-          <span className="title">{tabTitles[tab]}</span>
-          <button
-            className={`icon ${boostLeft > 0 ? "boost-on" : ""}`}
-            aria-label="boost"
-            onClick={() => setSheet("boost")}
-          >
-            <i className="ti ti-bolt" />
-          </button>
-        </header>
-
-        <div className="screen">{screen}</div>
-
-        <BottomNav tab={tab} onChange={setTab} matchCount={matches.length} />
-
-        {overlays}
-      </div>
-    </div>
+    <AppShell
+      isDesktop={isDesktop}
+      tab={tab}
+      onTab={setTab}
+      matchCount={matches.length}
+      boostActive={boostLeft > 0}
+      filtersDisabled={mode === "romance"}
+      onFilter={() => mode === "cofounder" && setSheet("filter")}
+      onBoost={() => setSheet("boost")}
+      overlays={overlays}
+    >
+      {screen}
+    </AppShell>
   );
 }
