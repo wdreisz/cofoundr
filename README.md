@@ -12,6 +12,14 @@ npm run dev      # dev server (http://localhost:5173)
 npm run build    # type-check + production build to dist/
 ```
 
+## Deploy
+
+A pure static SPA — `npm run build` emits `dist/`. Because routing is hash-based (`/#app`), no SPA rewrite rules are needed on any host.
+
+**Vercel (recommended):** import this repo at [vercel.com/new](https://vercel.com/new). It auto-detects Vite — build command `npm run build`, output `dist`. Every push to `main` redeploys.
+
+Repo: https://github.com/wdreisz/cofoundr
+
 ## What it does
 
 1. **Onboarding** — a 7-step wizard builds your structured matching profile (role you bring, role you seek, stage, commitment, industries, pitch). Every field feeds the algorithm.
